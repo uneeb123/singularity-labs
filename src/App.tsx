@@ -14,8 +14,7 @@ const COLORS = {
   DIRECTORY: "text-blue-300",
 };
 
-// ANSI Shadow ASCII Art
-
+// ANSI Shadow ASCII Art - Full version for larger screens
 const ASCII_ART = [
   "+---------------------------------------------------------------------------------------------+",
   "|                                                                                             |",
@@ -37,6 +36,19 @@ const ASCII_ART = [
   "|                                                                                             |",
   "|                                   VERSION 0.0.7 beta                                        |",
   "+---------------------------------------------------------------------------------------------+",
+];
+
+// Simplified ASCII Art for mobile screens
+const MOBILE_ASCII_ART = [
+  "+----------------------------+",
+  "|                            |",
+  "|     SINGULARITY            |",
+  "|         LABS               |",
+  "|                            |",
+  "|  NETWORK OF AI AGENTS      |",
+  "|                            |",
+  "|     VERSION 0.0.7 beta     |",
+  "+----------------------------+",
 ];
 
 // Line with custom styling
@@ -68,8 +80,23 @@ const Terminal = () => {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -78,34 +105,47 @@ const Terminal = () => {
 
     // Initial welcome message with ASCII art
     const initialHistory: HistoryItem[] = [
-      // Border top and padding with glow effect
-      { text: ASCII_ART[0], color: COLORS.INFO, animation: "ascii-glow" },
-      { text: ASCII_ART[1], color: COLORS.INFO, animation: "ascii-glow" },
-      { text: ASCII_ART[2], color: COLORS.INFO, animation: "ascii-glow" },
-      
-      // "Singularity" ASCII art with flicker effect
-      ...ASCII_ART.slice(3, 9).map((line) => ({
-        text: line,
-        color: COLORS.INFO,
-        animation: "ascii-glow ascii-flicker",
-      })),
-      
-      // Spacer
-      { text: ASCII_ART[9], color: COLORS.INFO, animation: "ascii-glow" },
-      
-      // "Labs" ASCII art with just glow animation
-      ...ASCII_ART.slice(10, 16).map((line) => ({
-        text: line,
-        color: COLORS.INFO,
-        animation: "ascii-glow",
-      })),
-      
-      // Footer lines with glow effect
-      ...ASCII_ART.slice(16).map((line) => ({
-        text: line,
-        color: COLORS.INFO,
-        animation: "ascii-glow",
-      })),
+      // Choose ASCII art based on screen size
+      ...(isMobile ? 
+        // Mobile ASCII art with glow effect
+        MOBILE_ASCII_ART.map((line) => ({
+          text: line,
+          color: COLORS.INFO,
+          animation: "ascii-glow",
+        }))
+        : 
+        // Desktop ASCII art with all effects
+        [
+          // Border top and padding with glow effect
+          { text: ASCII_ART[0], color: COLORS.INFO, animation: "ascii-glow" },
+          { text: ASCII_ART[1], color: COLORS.INFO, animation: "ascii-glow" },
+          { text: ASCII_ART[2], color: COLORS.INFO, animation: "ascii-glow" },
+          
+          // "Singularity" ASCII art with flicker effect
+          ...ASCII_ART.slice(3, 9).map((line) => ({
+            text: line,
+            color: COLORS.INFO,
+            animation: "ascii-glow ascii-flicker",
+          })),
+          
+          // Spacer
+          { text: ASCII_ART[9], color: COLORS.INFO, animation: "ascii-glow" },
+          
+          // "Labs" ASCII art with just glow animation
+          ...ASCII_ART.slice(10, 16).map((line) => ({
+            text: line,
+            color: COLORS.INFO,
+            animation: "ascii-glow",
+          })),
+          
+          // Footer lines with glow effect
+          ...ASCII_ART.slice(16).map((line) => ({
+            text: line,
+            color: COLORS.INFO,
+            animation: "ascii-glow",
+          })),
+        ]
+      ),
       
       { text: "", color: COLORS.DEFAULT },
       {
@@ -117,11 +157,20 @@ const Terminal = () => {
         text: 'Type "help" to see available commands', 
         color: COLORS.INFO
       },
+      // Add mobile experience notice only for mobile users
+      ...(isMobile ? [
+        { text: "", color: COLORS.DEFAULT },
+        { 
+          text: "NOTE: For full terminal experience, use desktop", 
+          color: COLORS.WARNING,
+          animation: "ascii-flicker" 
+        }
+      ] : []),
       { text: "", color: COLORS.DEFAULT },
     ];
 
     setHistory(initialHistory);
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -162,34 +211,47 @@ const Terminal = () => {
       case "clear":
         // Reset everything
         const initialHistory: HistoryItem[] = [
-          // Border top and padding with glow effect
-          { text: ASCII_ART[0], color: COLORS.INFO, animation: "ascii-glow" },
-          { text: ASCII_ART[1], color: COLORS.INFO, animation: "ascii-glow" },
-          { text: ASCII_ART[2], color: COLORS.INFO, animation: "ascii-glow" },
-          
-          // "Singularity" ASCII art with flicker effect
-          ...ASCII_ART.slice(3, 9).map((line) => ({
-            text: line,
-            color: COLORS.INFO,
-            animation: "ascii-glow ascii-flicker",
-          })),
-          
-          // Spacer
-          { text: ASCII_ART[9], color: COLORS.INFO, animation: "ascii-glow" },
-          
-          // "Labs" ASCII art with just glow animation
-          ...ASCII_ART.slice(10, 16).map((line) => ({
-            text: line,
-            color: COLORS.INFO,
-            animation: "ascii-glow",
-          })),
-          
-          // Footer lines with glow effect
-          ...ASCII_ART.slice(16).map((line) => ({
-            text: line,
-            color: COLORS.INFO,
-            animation: "ascii-glow",
-          })),
+          // Choose ASCII art based on screen size
+          ...(isMobile ? 
+            // Mobile ASCII art with glow effect
+            MOBILE_ASCII_ART.map((line) => ({
+              text: line,
+              color: COLORS.INFO,
+              animation: "ascii-glow",
+            }))
+            : 
+            // Desktop ASCII art with all effects
+            [
+              // Border top and padding with glow effect
+              { text: ASCII_ART[0], color: COLORS.INFO, animation: "ascii-glow" },
+              { text: ASCII_ART[1], color: COLORS.INFO, animation: "ascii-glow" },
+              { text: ASCII_ART[2], color: COLORS.INFO, animation: "ascii-glow" },
+              
+              // "Singularity" ASCII art with flicker effect
+              ...ASCII_ART.slice(3, 9).map((line) => ({
+                text: line,
+                color: COLORS.INFO,
+                animation: "ascii-glow ascii-flicker",
+              })),
+              
+              // Spacer
+              { text: ASCII_ART[9], color: COLORS.INFO, animation: "ascii-glow" },
+              
+              // "Labs" ASCII art with just glow animation
+              ...ASCII_ART.slice(10, 16).map((line) => ({
+                text: line,
+                color: COLORS.INFO,
+                animation: "ascii-glow",
+              })),
+              
+              // Footer lines with glow effect
+              ...ASCII_ART.slice(16).map((line) => ({
+                text: line,
+                color: COLORS.INFO,
+                animation: "ascii-glow",
+              })),
+            ]
+          ),
           
           { text: "", color: COLORS.DEFAULT },
           {
@@ -201,6 +263,15 @@ const Terminal = () => {
             text: 'Type "help" to see available commands', 
             color: COLORS.INFO
           },
+          // Add mobile experience notice only for mobile users
+          ...(isMobile ? [
+            { text: "", color: COLORS.DEFAULT },
+            { 
+              text: "NOTE: For full terminal experience, use desktop", 
+              color: COLORS.WARNING,
+              animation: "ascii-flicker" 
+            }
+          ] : []),
           { text: "", color: COLORS.DEFAULT },
         ];
         setHistory(initialHistory);
@@ -218,17 +289,41 @@ const Terminal = () => {
           const filename = args[1].toLowerCase();
           switch (filename) {
             case "readme.md":
-              newHistory.push(
-                { text: "# Singularity Labs", color: COLORS.HEADER },
-                { text: "", color: COLORS.DEFAULT },
-                { text: "Singularity Labs is building a network of AI agents that reward and", color: COLORS.INFO },
-                { text: "incentivize users who actively contribute to communities with shared", color: COLORS.INFO },
-                { text: "beliefs and goals. The agents track sentiment, identify emerging trends", color: COLORS.INFO },
-                { text: "and gather insights from X, Telegram, and Discord.", color: COLORS.INFO },
-                { text: "", color: COLORS.DEFAULT },
-                { text: "Coming soon!", color: COLORS.SUCCESS },
-                { text: "", color: COLORS.DEFAULT }
-              );
+              // Check if mobile and use responsive text layout
+              if (isMobile) {
+                newHistory.push(
+                  { text: "# Singularity Labs", color: COLORS.HEADER },
+                  { text: "", color: COLORS.DEFAULT },
+                  { text: "Singularity Labs is", color: COLORS.INFO },
+                  { text: "building a network of", color: COLORS.INFO },
+                  { text: "AI agents that reward", color: COLORS.INFO },
+                  { text: "and incentivize users", color: COLORS.INFO },
+                  { text: "who actively contribute", color: COLORS.INFO },
+                  { text: "to communities with", color: COLORS.INFO },
+                  { text: "shared beliefs and goals.", color: COLORS.INFO },
+                  { text: "", color: COLORS.DEFAULT },
+                  { text: "The agents track", color: COLORS.INFO },
+                  { text: "sentiment, identify", color: COLORS.INFO },
+                  { text: "emerging trends and", color: COLORS.INFO },
+                  { text: "gather insights from X,", color: COLORS.INFO },
+                  { text: "Telegram, and Discord.", color: COLORS.INFO },
+                  { text: "", color: COLORS.DEFAULT },
+                  { text: "Coming soon!", color: COLORS.SUCCESS },
+                  { text: "", color: COLORS.DEFAULT }
+                );
+              } else {
+                newHistory.push(
+                  { text: "# Singularity Labs", color: COLORS.HEADER },
+                  { text: "", color: COLORS.DEFAULT },
+                  { text: "Singularity Labs is building a network of AI agents that reward and", color: COLORS.INFO },
+                  { text: "incentivize users who actively contribute to communities with shared", color: COLORS.INFO },
+                  { text: "beliefs and goals. The agents track sentiment, identify emerging trends", color: COLORS.INFO },
+                  { text: "and gather insights from X, Telegram, and Discord.", color: COLORS.INFO },
+                  { text: "", color: COLORS.DEFAULT },
+                  { text: "Coming soon!", color: COLORS.SUCCESS },
+                  { text: "", color: COLORS.DEFAULT }
+                );
+              }
               break;
             default:
               newHistory.push(
@@ -403,6 +498,9 @@ const Terminal = () => {
     }
   };
 
+  // Available commands for command buttons
+  const commandButtons = ["help", "clear", "ls", "cat readme.md", "date", "system"];
+
   return (
     <div
       className={`h-screen p-4 font-mono overflow-auto ${singularityMode ? 'singularity-mode' : 'bg-black'}`}
@@ -410,15 +508,18 @@ const Terminal = () => {
       ref={terminalRef}
     >
       <div className="max-w-3xl mx-auto">
-        {history.map((item, i) => (
-          <Line
-            key={i}
-            text={item.text}
-            color={item.color}
-            className={item.className}
-            animation={item.animation}
-          />
-        ))}
+        {/* Mobile-adaptive content - overflow handling for ASCII art */}
+        <div className="overflow-x-auto">
+          {history.map((item, i) => (
+            <Line
+              key={i}
+              text={item.text}
+              color={item.color}
+              className={item.className}
+              animation={item.animation}
+            />
+          ))}
+        </div>
         <div className="flex text-green-300 text-xs">
           <span>$ </span>
           <input
@@ -430,6 +531,23 @@ const Terminal = () => {
             className="flex-grow bg-transparent outline-none border-none text-green-300 font-mono text-xs ml-1"
             autoFocus
           />
+        </div>
+        
+        {/* Command buttons for mobile users */}
+        <div className="pt-4 md:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            {commandButtons.map((cmd) => (
+              <button
+                key={cmd}
+                onClick={() => {
+                  handleCommand(cmd);
+                }}
+                className="bg-green-900 border border-green-500 text-green-300 py-2 px-3 rounded text-xs hover:bg-green-800 active:bg-green-700"
+              >
+                {cmd}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
